@@ -74,6 +74,8 @@ try:
     workbook.close()
     safari.quit()
 except Exception:
-    workbook.close()
-    safari.quit()
+    if 'workbook' in vars():
+        workbook.close()
+    if 'safari' in vars():
+        safari.quit()
     os.execv(sys.executable, ['python3'] + sys.argv)
