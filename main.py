@@ -1,71 +1,79 @@
-import sys
 import os
-from appium import webdriver
+import sys
+import openpyxl
+from openpyxl.styles import Font
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-def setUpDriver(desiredCapabilities):
-    driver = webdriver.Remote('http://localhost:4725/wd/hub', desiredCapabilities)
-    driver.implicitly_wait(60)
-    return driver
+def setUpDriver():
+    safari = webdriver.Safari()
+    safari.maximize_window()
+    safari.implicitly_wait(15)
+    return safari
 
-def screenshot(driver, fileName):
-    driver.save_screenshot(os.getcwd() + '/' + fileName)
+def waitForWebsiteLoadingComplete(driver):
+    table = driver.find_element(By.ID, "hasResult")
+    thead = table.find_element(By.CLASS_NAME, "cubinvest-l-table__tr")
+    tbody = table.find_element(By.ID, "resultContainer")
+    rows = tbody.find_elements(By.CLASS_NAME, "cubinvest-l-table__tr")
+    lastRow = rows[len(rows) - 1]
+    cells = lastRow.find_elements(By.XPATH, './/div[contains(@class, "cubinvest-l-table__td")][not(@style="display: none;")][not(@style="display:none;")]')
+    nameCell = cells[2]
+    etfId = nameCell.find_element(By.XPATH, './/div[@class="cubinvest-l-table__item cubinvest-l-table__item--fundId"]')
+    WebDriverWait(driver, 15).until_not(EC.text_to_be_present_in_element((By.XPATH, '//*[@id="' + etfId.text + '-DjMktPrice"]'), "-"))
+    return (table, thead, tbody)
 
-def waitAndClick(driver, By, string):
-    wait.until(EC.presence_of_element_located((By, string)))
-    driver.create_web_element(driver.find_element(By, string)["ELEMENT"]).click()
+def initialExcelFormat(workbook):
+    sheet = workbook.worksheets[0]
+    sheet.row_dimensions[1].height = 20
+    sheet.column_dimensions['B'].width = 35
+    sheet.column_dimensions['C'].width = 10
+    return sheet
 
-desiredCapabilities = {
-    'platformName': 'Android',
-    'platformVersion': '12',
-    'deviceName': '172.25.137.138:5555',
-    'automationName': 'UiAutomator2',
-    'browserName': 'Chrome',
-    'noReset': True,
-    'newCommandTimeout': 60
-}
-driver = setUpDriver(desiredCapabilities)
-driver.get('https://www.cathaybk.com.tw/cathaybk/')
-wait = WebDriverWait(driver, 60)
+def writeTableHeadTitle(sheet, thead):
+    columnTitles = thead.find_elements(By.XPATH, '//div[@class="cubinvest-l-table__th"][not(@style="display: none;")]')
+    columnTitles.pop(0)
+    columnTitles.pop(len(columnTitles)-1)
+    for idx, title in enumerate(columnTitles):
+        sheet.cell(row = 1, column = idx + 1).value = title.text.strip()
+        sheet.cell(row = 1, column = idx + 1).font = Font(bold=True)
+
+def writeTableData(sheet, tbody):
+    rows = tbody.find_elements(By.CLASS_NAME, "cubinvest-l-table__tr")
+    for RowIdx, row in enumerate(rows):
+        cells = row.find_elements(By.XPATH, './/div[contains(@class, "cubinvest-l-table__td")][not(@style="display: none;")][not(@style="display:none;")]')
+        cells.pop(0)
+        cells.pop(len(cells)-1)
+        for cellIdx, cell in enumerate(cells):
+            if (cell.text.__contains__("基金")):
+                sheet.cell(row=RowIdx+2, column=cellIdx+1).value = cell.text[:cell.text.index("基金")+2] + "\n" + cell.text[cell.text.index("基金")+2:]
+            elif (cell.get_attribute("data-th") == "DjMktPrice"):
+                elements = cell.find_elements(By.CLASS_NAME, 'cubinvest-l-table__item')
+                sheet.cell(row=RowIdx+2, column=cellIdx+1).value = elements[0].text + "\n" + elements[1].text
+            else:
+                sheet.cell(row=RowIdx+2, column=cellIdx+1).value = cell.text
+                sheet.cell(row=RowIdx+2, column=cellIdx+1).font = Font(color='ff0000') if cell.text.startswith("-") else Font(color='000000')
 
 try:
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'cubre-o-quickLink')))
-    screenshot(driver, 'home page.png')
+    safari = setUpDriver()
+    safari.get("https://www.cathaybk.com.tw/cathaybk/personal/investment/etf/search/?hotissue=05")
 
-    waitAndClick(driver, By.CLASS_NAME, 'cubre-o-header__burger') # 左上角漢堡選單
-    waitAndClick(driver, By.XPATH, '/html/body/div[1]/header/div/div[3]/div/div[2]/div/div/div[1]') # 產品介紹
-    waitAndClick(driver, By.XPATH, '/html/body/div[1]/header/div/div[3]/div/div[2]/div/div/div[1]/div[2]/div/div[1]') # 信用卡
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "cubre-o-menuLinkList__content")))
-    screenshot(driver, 'credit card list.png')
+    if os.path.isfile('Cathay-United-Bank-ETF.xlsx'): # open or new a xlsx file
+        workbook = openpyxl.load_workbook('Cathay-United-Bank-ETF.xlsx')
+    else:
+        workbook = openpyxl.Workbook()
 
-    creditCardList = driver.create_web_element(driver.find_element(By.XPATH, "/html/body/div[1]/header/div/div[3]/div/div[2]/div/div/div[1]/div[2]/div/div[1]/div[2]")["ELEMENT"])
-    print("-----")
-    print("There are " + str(len(creditCardList.find_elements(By.XPATH, './/a[@class="cubre-a-menuLink"][@id="lnk_Link"]'))) + " rows in credit card menu.")
-    waitAndClick(driver, By.XPATH, '//*[@id="lnk_Link"]') # 卡片介紹
-    bulletsArea = driver.create_web_element(driver.find_element(By.XPATH, "/html/body/div[1]/main/article/section[6]/div/div[2]/div/div[2]")["ELEMENT"])  # 停發卡選單點點區域
-    bullets = bulletsArea.find_elements(By.XPATH, './/span[@role="button"]') # 停發卡選單點點
-    print("-----")
-    print("There are " + str(len(bullets)) + " credit cards that stop contribute.")
+    sheet = initialExcelFormat(workbook)
+    (table, thead, tbody) = waitForWebsiteLoadingComplete(safari)
+    writeTableHeadTitle(sheet, thead)
+    writeTableData(sheet, tbody)
 
-    for idx, bullet in enumerate(bullets): # 依序點擊停發卡選單點點並截圖
-        creditCard = driver.create_web_element(bullet["ELEMENT"])
-        creditCard.click()
-        if idx == 0: # 如果是第一個選單點點，再點擊上方選單中的「停發卡」，正確定位
-            waitAndClick(driver, By.XPATH, '/html/body/div[1]/main/article/div/div/div/div[1]/div/div/a[6]')
-        wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/main/article/section[6]/div/div[2]/div/div[1]/div[" + str(idx + 1) + "]")))
-        screenshot(driver, 'credit card - ' + str(idx + 1) + '.png')
-
-    numOfCreditCardImg = 0
-    for path in os.listdir(os.getcwd()): # 數截圖了幾張信用卡
-        if os.path.isfile(os.path.join(os.getcwd(), path)) and path.startswith("credit card - "):
-            numOfCreditCardImg += 1
-
-    print("-----")
-    if numOfCreditCardImg == len(bullets):
-        print("Number of credit card screenshot is the same as website.")
+    workbook.save('Cathay-United-Bank-ETF.xlsx')
+    workbook.close()
+    safari.quit()
 except Exception:
+    workbook.close()
+    safari.quit()
     os.execv(sys.executable, ['python3'] + sys.argv)
-
-driver.quit()
