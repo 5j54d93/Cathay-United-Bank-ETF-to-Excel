@@ -1,6 +1,6 @@
 # Cathay United Bank ETF to Excel
 
-Using Selenium to extract ETF data from [Cathay United Bank](https://www.cathaybk.com.tw/cathaybk/personal/investment/etf/search/?hotissue=05) to Excel file.
+Using [**Selenium**](https://www.selenium.dev) to extract ETF data from [**Cathay United Bank**](https://www.cathaybk.com.tw/cathaybk/personal/investment/etf/search/?hotissue=05) to Excel file with [**Safari**](https://www.apple.com/safari/).
 
 <img src="https://github.com/5j54d93/Cathay-United-Bank-ETF-to-Excel/blob/main/.github/assets/Cathay%20United%20Bank%20EFT.png" width='100%' height='100%'/>
 
