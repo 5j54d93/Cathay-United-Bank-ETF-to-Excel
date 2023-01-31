@@ -10,7 +10,7 @@ Using [**Selenium**](https://www.selenium.dev) to extract ETF data from [**Catha
 
 ## Flow Chart
 
-<img src="https://github.com/5j54d93/Cathay-United-Bank-ETF-to-Excel/blob/main/.github/assets/flow%20chart.png" width='100%' height='100%'/>
+<img src="https://github.com/5j54d93/Cathay-United-Bank-ETF-to-Excel/blob/main/.github/assets/Flow%20Chart.png" width='100%' height='100%'/>
 
 1. Open [EFT website from Cathay United Bank](https://www.cathaybk.com.tw/cathaybk/personal/investment/etf/search/?hotissue=05) with Safari and sleep 9 second
 2. Find `table`、`thead`、`tbody`
