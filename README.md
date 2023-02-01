@@ -8,6 +8,13 @@ Using [**Selenium**](https://www.selenium.dev) to extract ETF data from [**Catha
 
 <img src="https://github.com/5j54d93/Cathay-United-Bank-ETF-to-Excel/blob/main/.github/assets/Cathay%20United%20Bank%20EFT.png" width='100%' height='100%'/>
 
+## Preparation
+
+- A Mac, so you could use Safari
+- Allow "remote automation" in Safari
+> 1. Choose Safari > Preferences, and on the Advanced tab, select "Show Develop menu in menu bar."
+> 2. Choose Develop > Allow Remote Automation.
+
 ## Flow Chart
 
 <img src="https://github.com/5j54d93/Cathay-United-Bank-ETF-to-Excel/blob/main/.github/assets/Flow%20Chart.png" width='100%' height='100%'/>
