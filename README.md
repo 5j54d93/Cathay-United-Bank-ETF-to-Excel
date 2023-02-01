@@ -12,16 +12,24 @@ Using [**Selenium**](https://www.selenium.dev) to extract ETF data from [**Catha
 
 <img src="https://github.com/5j54d93/Cathay-United-Bank-ETF-to-Excel/blob/main/.github/assets/Flow%20Chart.png" width='100%' height='100%'/>
 
-1. Open [EFT website from Cathay United Bank](https://www.cathaybk.com.tw/cathaybk/personal/investment/etf/search/?hotissue=05) with Safari and sleep 9 second
-2. Find `table`、`thead`、`tbody`
-3. Extract column title from `thead`
-4. Extract rows from `tbody`
-5. New or open a excel file named _Cathay-United-Bank-ETF.xlsx_
-6. Set column title height、Set ETF name and price width
-7. Set column title's font to bold
-8. Write rows from `tbody` to Excel without tags that with `style='diaplay: none'`
-9. If data is negative, set font color to red, else black
-10. Save Excel file
+`try:`
+
+> 1. Set up web driver：Safari
+> 2. Open [EFT website on Cathay United Bank](https://www.cathaybk.com.tw/cathaybk/personal/investment/etf/search/?hotissue=05)
+> 3. New or open a excel file named _Cathay-United-Bank-ETF.xlsx_
+> 4. Initial Excel cell format
+> 5. Wait for website to load completely：until price of the last row not equal to "-"
+> 6. Extract `table`、`thead`、`tbody`
+> 7. Write column title to Excel file, and set font to bold
+> 8. Write table data to Excel file：add new line on EFT name cell and price cell
+> 9. Save and close Excel file
+> 10. Quit web driver
+
+`except Exception:`
+
+> 1. If an Excel file have been opened, close it
+> 2. If a web driver have been created, quit it
+> 3. Rerun _main.py_ by `os.execv(sys.executable, ['python3'] + sys.argv)`
 
 ## License：MIT
 
